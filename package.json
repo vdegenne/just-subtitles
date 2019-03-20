@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "glob": "^7.1.3",
+    "lit-html": "^1.0.0",
+    "quickdrag": "^1.1.1"
+  },
+  "scripts": {
+    "serve:back": "nodemon back"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.10"
+  }
+}

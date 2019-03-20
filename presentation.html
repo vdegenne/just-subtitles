@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script type="module" src="/node_modules/quickdrag/quickdrag.js"></script>
+</head>
+
+<body>
+  <style>
+    body {
+      font-family: Arial;
+    }
+
+    video {
+      display: none;
+    }
+
+    #background,
+    #presentation {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+
+    #background {
+      background: black;
+      z-index: -1;
+    }
+
+    #presentation {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 24px;
+
+      transition: opacity .4s linear;
+    }
+
+    .transparent {
+      opacity: 0;
+    }
+  </style>
+  <video id="video" src="/%videopath%" controls></video>
+  <div id="presentation"></div>
+  <div id="background"></div>
+
+  <script type="module">
+    import { TimeCodeSpan } from '/timecode.js'
+    import { render } from '/node_modules/lit-html/lit-html.js'
+    import { presentationTemplate } from '/presentation.js'
+
+
+    const fadeSubtitleIn = async () => {
+      // await new Promise(resolve => setTimeout(resolve, 1))
+      subtitlesContainer.style.transition = 'opacity .2s linear' // faster than fade out
+      subtitlesContainer.classList.remove('transparent')
+    }
+    const fadeSubtitleOut = () => {
+      subtitlesContainer.style.transition = 'opacity .5s linear'
+      subtitlesContainer.classList.add('transparent')
+    }
+
+    const renderSubtitle = (subtitle) => {
+      let videoname = '%videopath%'.split('/')
+      videoname = videoname[videoname.length - 1]
+      videoname = videoname.substr(0, videoname.lastIndexOf('.'))
+
+      render(
+        presentationTemplate(subtitle, videoname),
+        presentation
+      )
+    }
+
+    const setCurrentSubtitle = (subtitle) => {
+      if (window.subtitle !== subtitle) {
+        window.subtitle = subtitle
+        renderSubtitle(subtitle)
+        fadeSubtitleIn()
+        if (window.fadeoutTimeout) {
+          clearTimeout(fadeoutTimeout)
+          fadeoutTimeout = undefined
+        }
+      }
+    }
+
+    const processTheSubtitles = () => {
+      const raw = window.subtitlesRaw
+      const langs = (query.get('langs') || 'eng').split(',')
+
+      window.subtitles = []
+      let subtitle
+      for (let section of raw.split('\n\n')) {
+        const information = section.split('\n')
+
+        subtitles.push(subtitle = {
+          timecodes: new TimeCodeSpan(information[0]),
+          langs
+        })
+
+        /* precompute the times for whilePlaying better performance */
+        subtitle.timecodes.start.time = subtitle.timecodes.start.toSeconds()
+        subtitle.timecodes.end.time = subtitle.timecodes.end.toSeconds()
+
+        const numberOfLines = (information.length - 1) / langs.length
+        if (numberOfLines.toString().indexOf('.') > -1) {
+          console.warn(information)
+          throw new Error(`line number incorrect`)
+        }
+
+        for (let i = 0; i < langs.length; ++i) {
+          subtitle[langs[i]] = information.slice(1 + i * numberOfLines, 1 + i * numberOfLines + numberOfLines).join('\n')
+        }
+      }
+    }
+
+    window.onload = async () => {
+      window.filebase = window.location.pathname.split('/').slice(2).join('/')
+      /* get the subtitles (remotely) */
+      window.subtitlesRaw = await fetch(`/files/${filebase}/captions.sbv`).then(res => res.text())
+      processTheSubtitles()
+
+      background.style.opacity = 1
+
+      renderSubtitle({})
+    }
+    window.query = new URLSearchParams(window.location.search)
+
+    let whilePlayingInterval, watchingForFadeoutInterval;
+    const whilePlaying = () => {
+      let subtitle, found;
+      for (let i = 0; i < subtitles.length; ++i) {
+        subtitle = subtitles[i]
+        if (video.currentTime < subtitle.timecodes.start.time) {
+          return
+        }
+        if (video.currentTime > subtitle.timecodes.end.time) {
+          continue
+        }
+        /** reached */
+        found = true
+        break
+      }
+      if (found) {
+        setCurrentSubtitle(subtitle)
+      }
+    }
+    const playVideo = () => {
+      video.play()
+      whilePlayingInterval = setInterval(whilePlaying, 50)
+
+
+      /* if there is a loaded subtitle we should
+       * trigger a fade out when the time is out of it */
+      watchingForFadeoutInterval = setInterval(() => {
+        if (window.subtitle) {
+          if (video.currentTime < subtitle.timecodes.start.time
+            || video.currentTime > subtitle.timecodes.end.time) {
+            window.subtitle = null;
+            window.fadeoutTimeout = setTimeout(() => {
+              fadeSubtitleOut()
+              window.fadeoutTimeout = undefined
+            }, 2000)
+          }
+        }
+      }, 50)
+    }
+    const pauseVideo = () => {
+      if (whilePlayingInterval) {
+        clearInterval(whilePlayingInterval)
+        whilePlayingInterval = undefined
+      }
+      if (watchingForFadeoutInterval) {
+        clearInterval(watchingForFadeoutInterval)
+        watchingForFadeoutInterval = undefined
+      }
+      video.pause()
+    }
+
+
+    /**
+     * shortcuts
+     */
+    window.onkeydown = e => {
+      // console.log(e.keyCode)
+
+      /** play/pause video */
+      if (e.shiftKey && e.keyCode === 32) {
+        video.paused ? playVideo() : pauseVideo()
+      }
+
+      /** backward 2 seconds */
+      if (e.shiftKey && e.keyCode === 37) {
+        video.currentTime -= 2;
+        whilePlaying()
+      }
+      if (e.shiftKey && e.keyCode === 39) {
+        video.currentTime += 2;
+        whilePlaying()
+      }
+
+      if (e.keyCode === 189) {
+        if (background.style.opacity !== '0') {
+          background.style.opacity -= .1;
+        }
+      }
+      if (e.keyCode === 187) {
+        if (background.style.opacity !== '1') {
+          background.style.opacity = background.style.opacity - .1 + .2
+        }
+      }
+    }
+  </script>
+</body>
+
+</html>
