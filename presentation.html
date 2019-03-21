@@ -2,6 +2,9 @@
 <html>
 
 <head>
+  <script>
+    window.dirpath = '%dirpath%'
+  </script>
   <script type="module" src="/node_modules/quickdrag/quickdrag.js"></script>
 </head>
 
@@ -56,7 +59,7 @@
 
     const fadeSubtitleIn = async () => {
       // await new Promise(resolve => setTimeout(resolve, 1))
-      subtitlesContainer.style.transition = 'opacity .2s linear' // faster than fade out
+      subtitlesContainer.style.transition = 'opacity .1s linear' // faster than fade out
       subtitlesContainer.classList.remove('transparent')
     }
     const fadeSubtitleOut = () => {
@@ -64,13 +67,13 @@
       subtitlesContainer.classList.add('transparent')
     }
 
-    const renderSubtitle = (subtitle) => {
+    const renderSubtitle = async (subtitle) => {
       let videoname = '%videopath%'.split('/')
       videoname = videoname[videoname.length - 1]
       videoname = videoname.substr(0, videoname.lastIndexOf('.'))
 
       render(
-        presentationTemplate(subtitle, videoname),
+        await presentationTemplate(subtitle, videoname),
         presentation
       )
     }
@@ -118,9 +121,9 @@
     }
 
     window.onload = async () => {
-      window.filebase = window.location.pathname.split('/').slice(2).join('/')
+      // window.filebase = window.location.pathname.split('/').slice(2).join('/')
       /* get the subtitles (remotely) */
-      window.subtitlesRaw = await fetch(`/files/${filebase}/captions.sbv`).then(res => res.text())
+      window.subtitlesRaw = await fetch(`${dirpath}/captions.sbv`).then(res => res.text())
       processTheSubtitles()
 
       background.style.opacity = 1

@@ -21,6 +21,7 @@ app.get('/production(/*)?', async (req, res) => {
   const base = req.params[1]
   let content = readFileSync('production.html').toString()
   content = content.replace(/%videopath%/g, await getVideoname(base))
+  content = content.replace(/%dirpath%/g, `/files/${base}`)
   res.send(content)
 })
 
@@ -28,6 +29,7 @@ app.get('/presentation(/*)?', async (req, res) => {
   const base = req.params[1]
   let content = readFileSync('presentation.html').toString()
   content = content.replace(/%videopath%/g, await getVideoname(base))
+  content = content.replace(/%dirpath%/g, `/files/${base}`)
   res.send(content)
 })
 

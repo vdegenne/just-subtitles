@@ -8,7 +8,7 @@
     body {
       margin: 0;
       display: flex;
-      flex-direction: column;
+      align-items: flex-start;
       position: absolute;
       top: 0;
       left: 0;
@@ -17,21 +17,23 @@
     }
 
     video {
-      width: 100%;
-      height: 85px;
+      width: 220px;
     }
 
     video::-webkit-media-controls-panel {
-      display: flex !important;
-      opacity: 1 !important;
+      /* display: flex !important;
+      opacity: 1 !important; */
     }
 
     textarea {
       display: block;
       flex: 1;
-      width: 70%;
+      /* width: 70%; */
+      font-size: 14px;
+      height: 100%;
       margin: 0 auto;
       box-sizing: border-box;
+      outline: none;
     }
 
     #saved {
@@ -45,7 +47,7 @@
       display: none;
     }
   </style>
-  <video id="video" src="/%videopath%" controls></video>
+  <video id="video" src="/%videopath%"></video>
   <textarea id="textarea" autofocus></textarea>
   <div id="saved" class="hide">saved</div>
 
@@ -65,25 +67,29 @@
     window.addEventListener('keydown', e => {
       // console.log(e.keyCode);
 
-      /* toggle play/pause */
+      /** just pause and play the video */
+      if (e.shiftKey && e.keyCode === 32) {
+        e.preventDefault()
+        video.playUntil = undefined
+        togglePlayVideo()
+      }
+
+      /** play a span */
       if (e.ctrlKey && e.keyCode === 32) {
         e.preventDefault()
-        const timecode = getCursorTimeCodeSpan()
-        if (timecode) {
-          video.currentTime = timecode.start.toSeconds()
-          if (timecode.end) {
-            video.playUntil = timecode.end.toSeconds();
-          }
-        }
 
-        if (video.paused) {
-          playVideo()
-          video.playedFromShift = true
+        const { timecodeSpan } = getCursorTimeCodeSpanInformation()
+        if (timecodeSpan) {
+          playVideoSpan(
+            timecodeSpan.start.toSeconds(),
+            timecodeSpan.end ? timecodeSpan.end.toSeconds() : undefined
+          )
         }
-        else if (!video.paused && !timecode) {
-          pauseVideo()
+        else {
+          togglePlayVideo()
         }
       }
+
       /* back 2 seconds */
       if (e.shiftKey && e.keyCode === 37) {
         e.preventDefault()
@@ -95,26 +101,81 @@
         video.currentTime += 2
       }
 
-      /** add start timecode on cursor position */
-      if (e.altKey && e.key === 's') {
+      /** add timecode in the textarea */
+      if ((e.shiftKey || e.altKey) && e.keyCode === 13) {
         e.preventDefault();
-        const cursorPos = textarea.selectionStart
-        textarea.value =
-          `${textarea.value.substring(0, textarea.selectionStart)}${(new TimeCode(video.currentTime)).toString()}${textarea.value.substring(textarea.selectionStart)}`
-        textarea.selectionStart = cursorPos
-        textarea.selectionEnd = cursorPos
+        const cursor = textarea.selectionStart
+        const textValue = textarea.value.substring(0, cursor + 1)
+
+        /** search the most appropriate position to insert the new timecode */
+        let awaitingTimeCodeLastIndex,
+          emptyLineLastIndex = textValue.lastIndexOf('\n\n') + 1
+        let awaitingTimeCodeRegexp = /\d{3},\n/g
+        while (awaitingTimeCodeRegexp.test(textValue)) {
+          awaitingTimeCodeLastIndex = awaitingTimeCodeRegexp.lastIndex - 1
+        }
+        let insertionIndex = awaitingTimeCodeLastIndex || 0
+        let fromEmptyLine = false
+        if (emptyLineLastIndex > insertionIndex) {
+          insertionIndex = emptyLineLastIndex
+          fromEmptyLine = true
+        }
+
+        let timecode;
+        if (e.shiftKey) {
+          timecode = new TimeCode(video.currentTime)
+          timecode.milliseconds = `${timecode.milliseconds}`[0] + '00'
+        }
+        else if (e.altKey) {
+          timecode = window.lastInsertedTimeCode
+        }
+
+        /** finally insert the value */
+        addTextAt(insertionIndex, timecode.toString() + (fromEmptyLine ? ',' : ''))
+        textarea.selectionStart = cursor + 12
+        textarea.selectionEnd = cursor + 12
+        window.lastInsertedTimeCode = timecode
       }
-      /** just pause and play the video */
-      if (e.shiftKey && e.keyCode === 32) {
+
+      /** offset the timecodes */
+      if ((e.ctrlKey || e.altKey) && (e.keyCode === 37 || e.keyCode === 39)) {
         e.preventDefault()
-        video.playUntil = undefined
-        video.paused ? playVideo() : pauseVideo()
+
+        const cursor = textarea.selectionStart
+        const { timecodeSpan, timecodeString, textareaStartIndex } = getCursorTimeCodeSpanInformation()
+        const timecode = e.ctrlKey ? timecodeSpan.start : timecodeSpan.end
+
+        /** left arrow : substract / right arrow : add */
+        e.keyCode === 37 ? timecode.substract(100) : timecode.add(100)
+
+        replaceText(
+          textareaStartIndex,
+          textareaStartIndex + timecodeString.length,
+          timecodeSpan.toString()
+        )
+        textarea.selectionStart = cursor
+        textarea.selectionEnd = cursor
+
+        if (window.calibratePlayInterval) {
+          clearTimeout(calibratePlayInterval)
+          calibratePlayInterval = undefined
+        }
+        window.calibratePlayInterval = setTimeout(() => {
+          if (e.ctrlKey) {
+            playVideoSpan(timecodeSpan.start.toSeconds(), timecodeSpan.end ? timecodeSpan.end.toSeconds() : undefined)
+          }
+          else {
+            playVideoSpan(timecodeSpan.end.toSeconds() - 2, timecodeSpan.end.toSeconds())
+          }
+        }, 500)
       }
+
 
       /** recenter textarea */
       if (e.ctrlKey && e.key === 'l') {
         e.preventDefault()
-        textarea.scrollTo(0, textarea.scrollTop + 20);
+        // textarea.scrollTo(0, textarea.scrollTop + 50);
+        refocusCenter()
       }
 
       /** saving */
@@ -144,18 +205,24 @@
       }
     });
 
-    const getCursorTimeCodeSpan = () => {
-      const substring = textarea.value.substring(0, textarea.selectionStart + 8);
+    const getCursorTimeCodeSpanInformation = () => {
+      const textvalue = textarea.value.substring(0, textarea.selectionStart + 8);
       const regexp = new RegExp(TimeCodeSpan.regexp, 'g');
-      const results = substring.match(regexp);
+      const results = textvalue.match(regexp);
       if (results) {
-        return new TimeCodeSpan(results[results.length - 1])
+        return {
+          timecodeString: results[results.length - 1],
+          timecodeSpan: new TimeCodeSpan(results[results.length - 1]),
+          textareaStartIndex: textvalue.lastIndexOf(results[results.length - 1])
+        }
       }
       else {
-        return null
+        return {
+          timecodeSpan: null,
+          textareaStartIndex: -1
+        }
       }
     }
-    window.getCursorTimeCodeSpan = getCursorTimeCodeSpan;
 
     const seekToCursorStartTimeCode = () => {
       const timecode = getCursorTimeCodeSpan()
@@ -180,6 +247,35 @@
       video.pause()
       clearInterval(videoWhilePlayingInterval)
       videoWhilePlayingInterval = undefined
+    }
+    const togglePlayVideo = () => {
+      video.paused ? playVideo() : pauseVideo()
+    }
+    const playVideoSpan = (start, end) => {
+      video.currentTime = start
+      video.playUntil = end
+      pauseVideo()
+      playVideo()
+    }
+
+
+    /** textarea functions */
+    textarea.onkeydown = (e) => {
+      refocusCenter()
+    }
+    const refocusCenter = () => {
+      textarea.scrollTo(0, 0)
+      textarea.blur()
+      textarea.focus()
+    }
+    const addTextAt = (position, text) => {
+      textarea.value = textarea.value.substring(0, position)
+        + text + textarea.value.substring(position);
+    }
+
+    const replaceText = (start, end, text) => {
+      textarea.value = textarea.value.substring(0, start)
+        + text + textarea.value.substring(end);
     }
   </script>
 </body>
