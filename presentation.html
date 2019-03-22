@@ -5,6 +5,9 @@
   <script>
     window.dirpath = '%dirpath%'
   </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css?family=Roboto');
+  </style>
   <script type="module" src="/node_modules/quickdrag/quickdrag.js"></script>
 </head>
 
@@ -29,7 +32,6 @@
 
     #background {
       background: black;
-      z-index: -1;
     }
 
     #presentation {
@@ -48,8 +50,8 @@
     }
   </style>
   <video id="video" src="/%videopath%" controls></video>
-  <div id="presentation"></div>
   <div id="background"></div>
+  <div id="presentation"></div>
 
   <script type="module">
     import { TimeCodeSpan } from '/timecode.js'

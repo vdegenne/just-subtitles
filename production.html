@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
 
-<head></head>
+<head>
+</head>
 
 <body>
   <style>
@@ -14,10 +15,6 @@
       left: 0;
       bottom: 0;
       right: 0;
-    }
-
-    video {
-      width: 220px;
     }
 
     video::-webkit-media-controls-panel {
@@ -47,7 +44,31 @@
       display: none;
     }
   </style>
-  <video id="video" src="/%videopath%"></video>
+
+  <style>
+    #video-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    #video-container>#controls {
+      padding: 10px;
+    }
+
+    #video-container>#controls>button {
+      width: 24px;
+      height: 24px;
+    }
+  </style>
+  <div id="video-container">
+    <video id="video" src="/%videopath%" width=450></video>
+    <div id="controls">
+      <button onclick="video.width += 50">+</button>
+      <button onclick="video.width -= 50">-</button>
+    </div>
+  </div>
   <textarea id="textarea" autofocus></textarea>
   <div id="saved" class="hide">saved</div>
 
@@ -55,6 +76,8 @@
     import { TimeCode, TimeCodeSpan } from '/timecode.js'
 
     window.onload = async () => {
+      video.volume = .3;
+
       window.filebase = window.location.pathname.split('/').slice(2).join('/')
       fetch(`/files/${filebase}/captions.sbv`).then(async res => {
         if (res.status !== 200) {
@@ -127,14 +150,14 @@
           timecode.milliseconds = `${timecode.milliseconds}`[0] + '00'
         }
         else if (e.altKey) {
-          timecode = window.lastInsertedTimeCode
+          const { timecodeSpan } = getCursorTimeCodeSpanInformation()
+          timecode = timecodeSpan.end
         }
 
         /** finally insert the value */
         addTextAt(insertionIndex, timecode.toString() + (fromEmptyLine ? ',' : ''))
-        textarea.selectionStart = cursor + 12
-        textarea.selectionEnd = cursor + 12
-        window.lastInsertedTimeCode = timecode
+        textarea.selectionStart = cursor + 12 + (fromEmptyLine ? 1 : 0)
+        textarea.selectionEnd = cursor + 12 + (fromEmptyLine ? 1 : 0)
       }
 
       /** offset the timecodes */
@@ -260,9 +283,9 @@
 
 
     /** textarea functions */
-    textarea.onkeydown = (e) => {
-      refocusCenter()
-    }
+    // textarea.onkeydown = (e) => {
+    //   refocusCenter()
+    // }
     const refocusCenter = () => {
       textarea.scrollTo(0, 0)
       textarea.blur()
