@@ -2,6 +2,9 @@
 <html>
 
 <head>
+  <script>
+    window.dirpath = '%dirpath%'
+  </script>
 </head>
 
 <body>
@@ -37,7 +40,10 @@
       font-family: Arial, Helvetica, sans-serif;
       position: absolute;
       bottom: 0;
-      left: 0;
+      left: 300px;
+      background: black;
+      color: yellow;
+      padding: 3px;
     }
 
     .hide {
@@ -63,7 +69,9 @@
     }
   </style>
   <div id="video-container">
-    <video id="video" src="/%videopath%" width=450></video>
+    <video id="video" src="/%videopath%" width=450>
+      <track kind="captions" src="/files/test/달라달라/captions.vtt">
+    </video>
     <div id="controls">
       <button onclick="video.width += 50">+</button>
       <button onclick="video.width -= 50">-</button>
@@ -73,13 +81,14 @@
   <div id="saved" class="hide">saved</div>
 
   <script type="module">
-    import { TimeCode, TimeCodeSpan } from '/timecode.js'
+    import { TimeCode, TimeCodeSpan, TimeCodeSpanVTT } from '/timecode.js'
+    import { SubtitlesVTT } from '/subtitles.js'
 
     window.onload = async () => {
-      video.volume = .3;
+      video.volume = .4;
 
       window.filebase = window.location.pathname.split('/').slice(2).join('/')
-      fetch(`/files/${filebase}/captions.sbv`).then(async res => {
+      fetch(`/files/${filebase}/captions.vtt`).then(async res => {
         if (res.status !== 200) {
           throw new Error('404')
         }
@@ -93,8 +102,12 @@
       /** just pause and play the video */
       if (e.shiftKey && e.keyCode === 32) {
         e.preventDefault()
-        video.playUntil = undefined
-        togglePlayVideo()
+        if (video.playUntil && !video.paused) {
+          video.playUntil = undefined
+        }
+        else {
+          togglePlayVideo()
+        }
       }
 
       /** play a span */
@@ -113,30 +126,32 @@
         }
       }
 
-      /* back 2 seconds */
+      /* back 1 seconds */
       if (e.shiftKey && e.keyCode === 37) {
         e.preventDefault()
-        video.currentTime -= 2
+        video.currentTime -= 1
       }
-      /* forward 2 seconds */
+      /* forward 1 seconds */
       if (e.shiftKey && e.keyCode === 39) {
         e.preventDefault()
-        video.currentTime += 2
+        video.currentTime += 1
       }
 
       /** add timecode in the textarea */
-      if ((e.shiftKey || e.altKey) && e.keyCode === 13) {
+      if ((e.shiftKey /* || e.altKey */) && e.keyCode === 13) {
         e.preventDefault();
         const cursor = textarea.selectionStart
         const textValue = textarea.value.substring(0, cursor + 1)
 
-        /** search the most appropriate position to insert the new timecode */
+        /** search the most accurate position to insert the new timecode */
         let awaitingTimeCodeLastIndex,
           emptyLineLastIndex = textValue.lastIndexOf('\n\n') + 1
-        let awaitingTimeCodeRegexp = /\d{3},\n/g
+
+        let awaitingTimeCodeRegexp = /\d{3} --> \n|\d{3} --> $/g
         while (awaitingTimeCodeRegexp.test(textValue)) {
           awaitingTimeCodeLastIndex = awaitingTimeCodeRegexp.lastIndex - 1
         }
+
         let insertionIndex = awaitingTimeCodeLastIndex || 0
         let fromEmptyLine = false
         if (emptyLineLastIndex > insertionIndex) {
@@ -149,15 +164,15 @@
           timecode = new TimeCode(video.currentTime)
           timecode.milliseconds = `${timecode.milliseconds}`[0] + '00'
         }
-        else if (e.altKey) {
-          const { timecodeSpan } = getCursorTimeCodeSpanInformation()
-          timecode = timecodeSpan.end
-        }
+        // else if (e.altKey) {
+        //   const { timecodeSpan } = getCursorTimeCodeSpanInformation()
+        //   timecode = timecodeSpan.end
+        // }
 
         /** finally insert the value */
-        addTextAt(insertionIndex, timecode.toString() + (fromEmptyLine ? ',' : ''))
-        textarea.selectionStart = cursor + 12 + (fromEmptyLine ? 1 : 0)
-        textarea.selectionEnd = cursor + 12 + (fromEmptyLine ? 1 : 0)
+        addTextAt(insertionIndex, timecode.toString() + (fromEmptyLine ? TimeCodeSpan.separator : ''))
+        textarea.selectionStart = cursor + 12 + (fromEmptyLine ? 5 : 0)
+        textarea.selectionEnd = cursor + 12 + (fromEmptyLine ? 5 : 0)
       }
 
       /** offset the timecodes */
@@ -167,6 +182,10 @@
         const cursor = textarea.selectionStart
         const { timecodeSpan, timecodeString, textareaStartIndex } = getCursorTimeCodeSpanInformation()
         const timecode = e.ctrlKey ? timecodeSpan.start : timecodeSpan.end
+
+        if (!timecode) {
+          return;
+        }
 
         /** left arrow : substract / right arrow : add */
         e.keyCode === 37 ? timecode.substract(100) : timecode.add(100)
@@ -188,9 +207,9 @@
             playVideoSpan(timecodeSpan.start.toSeconds(), timecodeSpan.end ? timecodeSpan.end.toSeconds() : undefined)
           }
           else {
-            playVideoSpan(timecodeSpan.end.toSeconds() - 2, timecodeSpan.end.toSeconds())
+            playVideoSpan(timecodeSpan.end.toSeconds() - 1, timecodeSpan.end.toSeconds())
           }
-        }, 500)
+        }, 400)
       }
 
 
@@ -204,38 +223,40 @@
       /** saving */
       if (e.ctrlKey && e.key === 's') {
         e.preventDefault()
-        fetch(`/save-subtitles/${filebase}`, {
-          method: 'POST',
-          body: `subtitles=${textarea.value}`,
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded'
-          }
-        }).then(res => {
-          if (res.status !== 200) {
-            throw new Error('something went wrong')
-          }
-          saved.classList.remove('hide');
-          if (window.savedTimeout) {
-            clearTimeout(window.savedTimeout)
-            window.savedTimeout = undefined
-          }
-          window.savedTimeout = setTimeout(() => {
-            saved.classList.add('hide');
-          }, 5000);
-        }).catch(err => {
-          alert('something went wrong')
-        })
+        /* this function should save a copy in the localStorage */
       }
+
+      /** go to line start (emacs flavor) */
+      if (e.ctrlKey && e.keyCode === 65) {
+        e.preventDefault()
+        const cursor = textarea.selectionStart
+        const textValue = textarea.value.slice(0, cursor)
+        textarea.selectionStart = textValue.lastIndexOf('\n') + 1
+        textarea.selectionEnd = textValue.lastIndexOf('\n') + 1
+      }
+
+
+      /**
+       * save on keydown on any key
+       */
+      if (window.saveDebounce) {
+        clearTimeout(saveDebounce)
+        saveDebounce = undefined
+      }
+      window.saveDebounce = setTimeout(() => {
+        saveFile()
+      }, 1000)
     });
 
     const getCursorTimeCodeSpanInformation = () => {
-      const textvalue = textarea.value.substring(0, textarea.selectionStart + 8);
-      const regexp = new RegExp(TimeCodeSpan.regexp, 'g');
+      const plus = textarea.value.substring(textarea.selectionStart).indexOf('\n')
+      const textvalue = textarea.value.substring(0, textarea.selectionStart + plus);
+      const regexp = new RegExp(TimeCodeSpanVTT.regexp, 'g');
       const results = textvalue.match(regexp);
       if (results) {
         return {
           timecodeString: results[results.length - 1],
-          timecodeSpan: new TimeCodeSpan(results[results.length - 1]),
+          timecodeSpan: new TimeCodeSpanVTT(results[results.length - 1]),
           textareaStartIndex: textvalue.lastIndexOf(results[results.length - 1])
         }
       }
@@ -247,17 +268,18 @@
       }
     }
 
-    const seekToCursorStartTimeCode = () => {
-      const timecode = getCursorTimeCodeSpan()
-      if (timecode) {
-        video.currentTime = timecode.start.toSeconds()
-      }
-    }
+    // const seekToCursorStartTimeCode = () => {
+    //   const timecode = getCursorTimeCodeSpan()
+    //   if (timecode) {
+    //     video.currentTime = timecode.start.toSeconds()
+    //   }
+    // }
 
 
     let videoWhilePlayingInterval;
     const videoWhilePlaying = () => {
       if (!video.paused && video.playUntil && video.currentTime > video.playUntil) {
+        video.playUntil = undefined;
         pauseVideo()
       }
     }
@@ -281,6 +303,43 @@
       playVideo()
     }
 
+    const updateTrackFile = () => {
+      const track = document.createElement('track')
+      track.kind = 'captions'
+      track.addEventListener('onloadedata', () => {
+        console.log('yo');
+      })
+      track.src = `${dirpath}/captions.vtt`
+      video.innerHTML = track.outerHTML;
+      video.textTracks[0].mode = 'showing'
+    }
+    updateTrackFile()
+
+
+    const saveFile = async () => {
+      fetch(`/save-subtitles/${filebase}`, {
+        method: 'POST',
+        body: `subtitles=${textarea.value}`,
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded'
+        }
+      }).then(res => {
+        if (res.status !== 200) {
+          throw new Error('something went wrong')
+        }
+        updateTrackFile()
+        saved.classList.remove('hide');
+        if (window.savedTimeout) {
+          clearTimeout(window.savedTimeout)
+          window.savedTimeout = undefined
+        }
+        window.savedTimeout = setTimeout(() => {
+          saved.classList.add('hide');
+        }, 5000);
+      }).catch(err => {
+        alert('something went wrong')
+      })
+    }
 
     /** textarea functions */
     // textarea.onkeydown = (e) => {

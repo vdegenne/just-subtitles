@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.post('/save-subtitles(/*)', async (req, res) => {
   const base = req.params[1]
-  writeFileSync(`files/${base}/captions.sbv`, req.body.subtitles)
+  writeFileSync(`files/${base}/captions.vtt`, req.body.subtitles)
   res.status(200).end()
 })
 

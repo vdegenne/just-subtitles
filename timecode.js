@@ -112,19 +112,35 @@ export class TimeCode {
 export class TimeCodeSpan {
   constructor(raw) {
     this.raw = raw
-    raw = raw.split(',')
-    this.start = new TimeCode(raw[0])
-    if (raw[1]) {
-      this.end = new TimeCode(raw[1])
-    }
+    raw = this.constructor.regexp.exec(raw)
+    this.start = new TimeCode(raw.groups.start)
+    this.end = raw.groups.end ? new TimeCode(raw.groups.end) : null
+    Object.assign(this, (({ start, end, ...o }) => ({ ...o }))(raw.groups))
   }
   toString() {
-    return `${this.start.toString()}${this.end
-      ? `,${this.end.toString()}`
+    return `${this.start.toString()}${this.constructor.separator}${this.end
+      ? this.end.toString()
       : ''}`
   }
   static get regexp() {
-    return /\d{1,2}:\d{2}:\d{2}\.\d{3}(,\d{1,2}:\d{2}:\d{2}\.\d{3})?/
+    return /(?<start>\d{1,2}:\d{2}:\d{2}\.\d{3}) --> (?<end>\d{1,2}:\d{2}:\d{2}\.\d{3})/
+  }
+  static get separator() {
+    return ' --> '
+  }
+}
+
+export class TimeCodeSpanVTT extends TimeCodeSpan {
+  static get separator() {
+    return ' --> '
+  }
+
+  toString() {
+    return super.toString() + (this.end && this.meta ? this.meta : '')
+  }
+
+  static get regexp() {
+    return /(?<start>\d{1,2}:\d{2}:\d{2}\.\d{3}) --> ((?<end>\d{1,2}:\d{2}:\d{2}\.\d{3})( (?<meta>.+))?)?/
   }
 }
 

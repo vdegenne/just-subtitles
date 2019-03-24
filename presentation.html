@@ -15,6 +15,7 @@
   <style>
     body {
       font-family: Arial;
+      margin: 0;
     }
 
     video {
@@ -54,7 +55,8 @@
   <div id="presentation"></div>
 
   <script type="module">
-    import { TimeCodeSpan } from '/timecode.js'
+    import { SubtitlesVTT } from '/subtitles.js'
+    // import { TimeCodeSpan } from '/timecode.js'
     import { render } from '/node_modules/lit-html/lit-html.js'
     import { presentationTemplate } from '/presentation.js'
 
@@ -92,41 +94,10 @@
       }
     }
 
-    const processTheSubtitles = () => {
-      const raw = window.subtitlesRaw
-      const langs = (query.get('langs') || 'eng').split(',')
-
-      window.subtitles = []
-      let subtitle
-      for (let section of raw.split('\n\n')) {
-        const information = section.split('\n')
-
-        subtitles.push(subtitle = {
-          timecodes: new TimeCodeSpan(information[0]),
-          langs
-        })
-
-        /* precompute the times for whilePlaying better performance */
-        subtitle.timecodes.start.time = subtitle.timecodes.start.toSeconds()
-        subtitle.timecodes.end.time = subtitle.timecodes.end.toSeconds()
-
-        const numberOfLines = (information.length - 1) / langs.length
-        if (numberOfLines.toString().indexOf('.') > -1) {
-          console.warn(information)
-          throw new Error(`line number incorrect`)
-        }
-
-        for (let i = 0; i < langs.length; ++i) {
-          subtitle[langs[i]] = information.slice(1 + i * numberOfLines, 1 + i * numberOfLines + numberOfLines).join('\n')
-        }
-      }
-    }
-
     window.onload = async () => {
-      // window.filebase = window.location.pathname.split('/').slice(2).join('/')
-      /* get the subtitles (remotely) */
-      window.subtitlesRaw = await fetch(`${dirpath}/captions.sbv`).then(res => res.text())
-      processTheSubtitles()
+      window.subtitlesRaw = await fetch(`${dirpath}/captions.vtt`).then(res => res.text())
+      window.langs = (query.get('langs') || 'eng').split(',')
+      window.subtitles = new SubtitlesVTT(window.subtitlesRaw, langs)
 
       background.style.opacity = 1
 

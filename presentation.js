@@ -173,6 +173,6 @@ export const presentationTemplate = async subtitle => {
       </div>
     </div>
   </div>
-  ${meta.style}
+  ${meta.customHtml}
   `
 }
