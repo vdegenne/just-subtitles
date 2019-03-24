@@ -136,7 +136,7 @@ export class TimeCodeSpanVTT extends TimeCodeSpan {
   }
 
   toString() {
-    return super.toString() + (this.end && this.meta ? this.meta : '')
+    return super.toString() + (this.end && this.meta ? ` ${this.meta}` : '')
   }
 
   static get regexp() {

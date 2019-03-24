@@ -31,7 +31,7 @@
       /* width: 70%; */
       font-size: 14px;
       height: 100%;
-      margin: 0 auto;
+      margin: 0 !important;
       box-sizing: border-box;
       outline: none;
     }
@@ -64,20 +64,21 @@
     }
 
     #video-container>#controls>button {
-      width: 24px;
-      height: 24px;
+      padding: 5px;
+      cursor: pointer;
     }
   </style>
   <div id="video-container">
-    <video id="video" src="/%videopath%" width=450>
+    <video id="video" src="/%videopath%" width="100%">
       <track kind="captions" src="/files/test/달라달라/captions.vtt">
     </video>
     <div id="controls">
-      <button onclick="video.width += 50">+</button>
-      <button onclick="video.width -= 50">-</button>
+      <button onclick="openPresentation()">presentation</button>
     </div>
   </div>
-  <textarea id="textarea" autofocus></textarea>
+  <div>
+    <textarea id="textarea" autofocus style="width:500px;height:500px"></textarea>
+  </div>
   <div id="saved" class="hide">saved</div>
 
   <script type="module">
@@ -87,8 +88,8 @@
     window.onload = async () => {
       video.volume = .4;
 
-      window.filebase = window.location.pathname.split('/').slice(2).join('/')
-      fetch(`/files/${filebase}/captions.vtt`).then(async res => {
+      // window.filebase = window.location.pathname.split('/').slice(2).join('/')
+      fetch(`${dirpath}/captions.vtt`).then(async res => {
         if (res.status !== 200) {
           throw new Error('404')
         }
@@ -317,7 +318,7 @@
 
 
     const saveFile = async () => {
-      fetch(`/save-subtitles/${filebase}`, {
+      fetch(`/save-subtitles/${dirpath.split('/').slice(2).join('/')}`, {
         method: 'POST',
         body: `subtitles=${textarea.value}`,
         headers: {
@@ -358,6 +359,11 @@
     const replaceText = (start, end, text) => {
       textarea.value = textarea.value.substring(0, start)
         + text + textarea.value.substring(end);
+    }
+
+
+    window.openPresentation = () => {
+      open(`/presentation/${window.location.pathname.split('/').slice(2).join('/')}${window.location.search}`, '_blank')
     }
   </script>
 </body>

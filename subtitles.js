@@ -24,6 +24,8 @@ export class SubtitlesVTT {
         }
 
         subtitle.timecodespan = new TimeCodeSpanVTT(lines.shift())
+        subtitle.start = subtitle.timecodespan.start
+        subtitle.end = subtitle.timecodespan.end
 
         subtitle.text = {}
         const numberOfLines = lines.length / langs.length

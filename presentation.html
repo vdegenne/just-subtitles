@@ -14,45 +14,54 @@
 <body>
   <style>
     body {
-      font-family: Arial;
+      font-family: Roboto;
       margin: 0;
     }
 
     video {
       display: none;
-    }
-
-    #background,
-    #presentation {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
+      width: 100%;
+      height: 100%;
     }
 
     #background {
       background: black;
+      z-index: -1
     }
 
     #presentation {
-      display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
       color: white;
       font-size: 24px;
 
       transition: opacity .4s linear;
     }
 
+    .layer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .otrans {
+      transition: opacity .3s linear;
+    }
+
     .transparent {
       opacity: 0;
     }
   </style>
-  <video id="video" src="/%videopath%" controls></video>
-  <div id="background"></div>
-  <div id="presentation"></div>
+  <div id="background" class="layer"></div>
+  <div class="layer">
+    <video id="video" src="/%videopath%"></video>
+  </div>
+  <div id="presentation" class="layer"></div>
 
   <script type="module">
     import { SubtitlesVTT } from '/subtitles.js'
@@ -63,21 +72,20 @@
 
     const fadeSubtitleIn = async () => {
       // await new Promise(resolve => setTimeout(resolve, 1))
-      subtitlesContainer.style.transition = 'opacity .1s linear' // faster than fade out
+      subtitlesContainer.style.transition = `opacity ${query.has('nofade') ? '0' : '.01'}s linear` // faster than fade out
       subtitlesContainer.classList.remove('transparent')
     }
     const fadeSubtitleOut = () => {
-      subtitlesContainer.style.transition = 'opacity .5s linear'
+      subtitlesContainer.style.transition = `opacity ${query.has('nofade') ? '0' : '.5'}s linear`
       subtitlesContainer.classList.add('transparent')
     }
 
     const renderSubtitle = async (subtitle) => {
-      let videoname = '%videopath%'.split('/')
-      videoname = videoname[videoname.length - 1]
-      videoname = videoname.substr(0, videoname.lastIndexOf('.'))
-
+      // let videoname = '%videopath%'.split('/')
+      // videoname = videoname[videoname.length - 1]
+      // videoname = videoname.substr(0, videoname.lastIndexOf('.'))
       render(
-        await presentationTemplate(subtitle, videoname),
+        await presentationTemplate(subtitle, langs),
         presentation
       )
     }
@@ -94,26 +102,33 @@
       }
     }
 
-    window.onload = async () => {
+    window.addEventListener('load', async () => {
       window.subtitlesRaw = await fetch(`${dirpath}/captions.vtt`).then(res => res.text())
       window.langs = (query.get('langs') || 'eng').split(',')
-      window.subtitles = new SubtitlesVTT(window.subtitlesRaw, langs)
+      window.subtitlesManager = new SubtitlesVTT(window.subtitlesRaw, langs)
+
+      // precompute the times
+      for (let sub of subtitlesManager.subtitles) {
+        sub.start.time = sub.start.toSeconds()
+        sub.end.time = sub.end.toSeconds()
+      }
 
       background.style.opacity = 1
-
       renderSubtitle({})
-    }
+    })
     window.query = new URLSearchParams(window.location.search)
 
-    let whilePlayingInterval, watchingForFadeoutInterval;
+
+    let whilePlayingInterval, watchingForSubtitleEndInterval
     const whilePlaying = () => {
       let subtitle, found;
-      for (let i = 0; i < subtitles.length; ++i) {
-        subtitle = subtitles[i]
-        if (video.currentTime < subtitle.timecodes.start.time) {
+      for (let i = 0; i < subtitlesManager.subtitles.length; ++i) {
+
+        subtitle = subtitlesManager.subtitles[i]
+        if (video.currentTime < subtitle.start.time) {
           return
         }
-        if (video.currentTime > subtitle.timecodes.end.time) {
+        if (video.currentTime > subtitle.end.time) {
           continue
         }
         /** reached */
@@ -125,33 +140,36 @@
       }
     }
     const playVideo = () => {
-      video.play()
       whilePlayingInterval = setInterval(whilePlaying, 50)
-
 
       /* if there is a loaded subtitle we should
        * trigger a fade out when the time is out of it */
-      watchingForFadeoutInterval = setInterval(() => {
+      watchingForSubtitleEndInterval = setInterval(() => {
         if (window.subtitle) {
-          if (video.currentTime < subtitle.timecodes.start.time
-            || video.currentTime > subtitle.timecodes.end.time) {
+          if (video.currentTime < subtitle.start.time
+            || video.currentTime > subtitle.end.time) {
+            if (window.subtitle === subtitlesManager.subtitles[subtitlesManager.subtitles.length - 1] && window.onSubtitlesEnd) {
+              onSubtitlesEnd()
+            }
             window.subtitle = null;
             window.fadeoutTimeout = setTimeout(() => {
               fadeSubtitleOut()
               window.fadeoutTimeout = undefined
-            }, 2000)
+            }, 500)
           }
         }
       }, 50)
+
+      video.play()
     }
     const pauseVideo = () => {
       if (whilePlayingInterval) {
         clearInterval(whilePlayingInterval)
         whilePlayingInterval = undefined
       }
-      if (watchingForFadeoutInterval) {
-        clearInterval(watchingForFadeoutInterval)
-        watchingForFadeoutInterval = undefined
+      if (watchingForSubtitleEndInterval) {
+        clearInterval(watchingForSubtitleEndInterval)
+        watchingForSubtitleEndInterval = undefined
       }
       video.pause()
     }

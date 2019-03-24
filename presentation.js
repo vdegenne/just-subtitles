@@ -17,9 +17,14 @@ const getCover = async () => {
   })
 }
 
-export const presentationTemplate = async subtitle => {
-  const cover = await getCover()
+let cover
 
+export const presentationTemplate = async (subtitle, langs) => {
+  if (!cover) {
+    cover = await getCover()
+  }
+
+  // console.log(subtitle, lang)
   return html`
   <style>
     #content {
@@ -27,72 +32,11 @@ export const presentationTemplate = async subtitle => {
       letter-spacing: 1px;
 
       --first-color: blue;
-      --second-color: red;
+      --second-color: #ffe3c7;
     }
-
-
-    .layer {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    /* #background {
-      background: #000;
-      z-index: -3;
-    }
-    #songtitle {
-      position: absolute;
-      top: 0;
-      left: 0;
-      padding: 6px;
-      font-size: 50%;
-      display: flex;
-      align-items: center;
-    }
-    #songtitle > span:first-of-type {
-      position: relative;
-      bottom: 1px;
-    }
-    #songtitle > span:last-of-type {
-      font-size: 80%;
-      margin: 0 0 0 6px;
-    }
-
-
-    
-    #content {
-      display: flex;
-      width: 100%;
-      padding: 0px 40px;
-      box-sizing: border-box;
-      height: 100%;
-    }
-
-    .subtitle {
-
-
-    }
-    .subtitle:last-of-type {
-      margin: 0;
-    }*/
   </style>
 
   <div id="content">
-    <style>
-      #background-layer {
-        width:200px;
-        height: 100%;
-        background: var(--first-color);
-      }
-    </style>
-    <div class="layer" id="background-layer"></div>
-
     <!-- COVER -->
     <style>
       #cover-layer {
@@ -127,13 +71,11 @@ export const presentationTemplate = async subtitle => {
 
     <style>
       #lyrics-layer {
-        justify-content: flex-end;
-        padding: 0 40px 0 0;
+        justify-content: flex-end
       }
       #subtitlesContainer {
-        width: 900px;
+        width: 70%;
         display: flex;
-        flex-direction: column;
         justify-content: center;
         align-items: center;
       }
@@ -141,7 +83,7 @@ export const presentationTemplate = async subtitle => {
       .subtitle {
         margin: 0 0 36px;
         white-space: pre-wrap;
-        width: 600px;
+        text-align: center;
       }
       .subtitle:last-of-type {
         margin: 0;
@@ -152,6 +94,7 @@ export const presentationTemplate = async subtitle => {
         line-height: 44px;
         font-size: 32px;
         letter-spacing: 1px;
+        font-weight: 100;
       }
       .fr {
         color: var(--second-color);
@@ -160,12 +103,12 @@ export const presentationTemplate = async subtitle => {
       }
     </style>
     <div class="layer" id="lyrics-layer">
-      <div id="subtitlesContainer" class="draggable transparent">
-        ${subtitle.langs &&
-          subtitle.langs.map(
+      <div id="subtitlesContainer" class="draggable">
+        ${subtitle.text &&
+          langs.map(
             lang =>
-              subtitle[lang].trim()
-                ? html`<div class="subtitle ${lang}">${subtitle[
+              lang !== 'hide' && subtitle.text[lang].trim()
+                ? html`<div class="subtitle ${lang}">${subtitle.text[
                     lang
                   ].trim()}</div>`
                 : null
