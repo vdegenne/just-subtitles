@@ -12,7 +12,7 @@ export class SubtitlesVTT {
           // ignore the notes
           continue
         }
-        if (section === '' || section === 'WEBVTT FILE') {
+        if (section === '' || section.startsWith('WEBVTT')) {
           continue // ignore empty lines or header
         }
 

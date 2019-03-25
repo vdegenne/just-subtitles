@@ -4,12 +4,16 @@ export const name = 'ITZY(있지) 달라달라(DALLA DALLA)'
 
 export const customHtml = html`
   <style>
+    #video-layer {
+      height: 0%;
+      /* padding: 120px 0 0 0; */
+    }
     video {
       display: initial;
     }
     #lyrics-layer {
-      align-items: flex-end;
-      padding: 0px 0 80px 0;
+      /* align-items: flex-end;
+      padding: 0px 0 180px 0; */
     }
     #subtitlesContainer {
       width: 100%;

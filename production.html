@@ -69,8 +69,9 @@
     }
   </style>
   <div id="video-container">
+    <style id="trackStyle"></style>
     <video id="video" src="/%videopath%" width="100%">
-      <track kind="captions" src="/files/test/달라달라/captions.vtt">
+      <track kind="captions" src="%dirpath%/captions.vtt">
     </video>
     <div id="controls">
       <button onclick="openPresentation()">presentation</button>
@@ -86,7 +87,7 @@
     import { SubtitlesVTT } from '/subtitles.js'
 
     window.onload = async () => {
-      video.volume = .4;
+      video.volume = .5;
 
       // window.filebase = window.location.pathname.split('/').slice(2).join('/')
       fetch(`${dirpath}/captions.vtt`).then(async res => {
@@ -103,27 +104,33 @@
       /** just pause and play the video */
       if (e.shiftKey && e.keyCode === 32) {
         e.preventDefault()
-        if (video.playUntil && !video.paused) {
-          video.playUntil = undefined
+        if (!video.paused && video.playUntil) {
+
         }
         else {
           togglePlayVideo()
         }
+        video.playUntil = undefined
       }
 
       /** play a span */
       if (e.ctrlKey && e.keyCode === 32) {
         e.preventDefault()
 
-        const { timecodeSpan } = getCursorTimeCodeSpanInformation()
-        if (timecodeSpan) {
-          playVideoSpan(
-            timecodeSpan.start.toSeconds(),
-            timecodeSpan.end ? timecodeSpan.end.toSeconds() : undefined
-          )
+        if (!video.paused && video.playUntil) {
+          pauseVideo()
         }
         else {
-          togglePlayVideo()
+          const { timecodeSpan } = getCursorTimeCodeSpanInformation()
+          if (timecodeSpan) {
+            playVideoSpan(
+              timecodeSpan.start.toSeconds(),
+              timecodeSpan.end ? timecodeSpan.end.toSeconds() : undefined
+            )
+          }
+          else {
+            togglePlayVideo()
+          }
         }
       }
 
@@ -235,18 +242,6 @@
         textarea.selectionStart = textValue.lastIndexOf('\n') + 1
         textarea.selectionEnd = textValue.lastIndexOf('\n') + 1
       }
-
-
-      /**
-       * save on keydown on any key
-       */
-      if (window.saveDebounce) {
-        clearTimeout(saveDebounce)
-        saveDebounce = undefined
-      }
-      window.saveDebounce = setTimeout(() => {
-        saveFile()
-      }, 1000)
     });
 
     const getCursorTimeCodeSpanInformation = () => {
@@ -307,9 +302,6 @@
     const updateTrackFile = () => {
       const track = document.createElement('track')
       track.kind = 'captions'
-      track.addEventListener('onloadedata', () => {
-        console.log('yo');
-      })
       track.src = `${dirpath}/captions.vtt`
       video.innerHTML = track.outerHTML;
       video.textTracks[0].mode = 'showing'
@@ -359,6 +351,29 @@
     const replaceText = (start, end, text) => {
       textarea.value = textarea.value.substring(0, start)
         + text + textarea.value.substring(end);
+    }
+
+
+    const keypressDebounceFct = () => {
+      if (window.keyPressDebounce) {
+        clearTimeout(keyPressDebounce)
+        keyPressDebounce = undefined
+      }
+      window.keyPressDebounce = setTimeout(() => {
+        // save file
+        saveFile()
+        // and also update the custom track styles
+        const style = textarea.value.split('\n\n').filter(part => part.startsWith('STYLE')).map(part => {
+          return part.split('\n').slice(1).join('')
+        }).join('\n')
+        trackStyle.innerText = style;
+      }, 500)
+    }
+    textarea.onkeypress = keypressDebounceFct;
+    textarea.onkeydown = (e) => {
+      if (e.keyCode === 8) {
+        keypressDebounceFct()
+      }
     }
 
 
