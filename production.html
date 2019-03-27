@@ -232,6 +232,7 @@
       if (e.ctrlKey && e.key === 's') {
         e.preventDefault()
         /* this function should save a copy in the localStorage */
+        localStorage.set('textarea', textarea.value)
       }
 
       /** go to line start (emacs flavor) */
@@ -354,12 +355,12 @@
     }
 
 
-    const keypressDebounceFct = () => {
-      if (window.keyPressDebounce) {
-        clearTimeout(keyPressDebounce)
-        keyPressDebounce = undefined
+    const saveDebounce = () => {
+      if (window.saveDebounceTimeout) {
+        clearTimeout(saveDebounceTimeout)
+        saveDebounceTimeout = undefined
       }
-      window.keyPressDebounce = setTimeout(() => {
+      window.saveDebounceTimeout = setTimeout(() => {
         // save file
         saveFile()
         // and also update the custom track styles
@@ -369,10 +370,10 @@
         trackStyle.innerText = style;
       }, 500)
     }
-    textarea.onkeypress = keypressDebounceFct;
+    textarea.onkeypress = saveDebounce;
     textarea.onkeydown = (e) => {
       if (e.keyCode === 8) {
-        keypressDebounceFct()
+        saveDebounce()
       }
     }
 

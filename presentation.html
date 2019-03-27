@@ -45,8 +45,14 @@
       left: 0;
 
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
+    }
+
+    .hflex {
+      display: flex;
+      flex-direction: column;
     }
 
     .otrans {
@@ -58,7 +64,7 @@
     }
   </style>
   <div id="background" class="layer"></div>
-  <div class="layer" id="video-layer">
+  <div id="video-layer" class="layer">
     <video id="video" src="/%videopath%"></video>
   </div>
   <div id="presentation" class="layer"></div>
@@ -67,7 +73,7 @@
     import { SubtitlesVTT } from '/subtitles.js'
     // import { TimeCodeSpan } from '/timecode.js'
     import { render } from '/node_modules/lit-html/lit-html.js'
-    import { presentationTemplate } from '/presentation.js'
+    import * as presentations from '/presentations.js'
 
 
     const fadeSubtitleIn = async () => {
@@ -84,8 +90,15 @@
       // let videoname = '%videopath%'.split('/')
       // videoname = videoname[videoname.length - 1]
       // videoname = videoname.substr(0, videoname.lastIndexOf('.'))
+      const layout = window.meta.layout || 'defaultLayout';
+      if (typeof presentations[layout] !== 'function') {
+        alert('layout not found')
+        throw new Error('layout not found')
+      }
       render(
-        await presentationTemplate(subtitle, langs),
+        await presentations[layout](
+          presentations.subtitleTemplate(subtitle, langs)
+        ),
         presentation
       )
     }
@@ -103,6 +116,12 @@
     }
 
     window.addEventListener('load', async () => {
+      try {
+        window.meta = await import(`${dirpath}/meta.js`)
+      } catch (e) {
+        alert('no meta file found')
+        return;
+      }
       window.subtitlesRaw = await fetch(`${dirpath}/captions.vtt`).then(res => res.text())
       window.langs = (query.get('langs') || 'eng').split(',')
       window.subtitlesManager = new SubtitlesVTT(window.subtitlesRaw, langs)

@@ -19,7 +19,53 @@ const getCover = async () => {
 
 let cover
 
-export const presentationTemplate = async (subtitle, langs) => {
+export const subtitleTemplate = (subtitle, langs) => {
+  return html`
+  <style>
+    .subtitle {
+      white-space:pre-wrap;
+      text-align: center;
+    }
+    .subtitle.kr {
+      font-family: NanumSquare;
+      font-size:120%;
+      letter-spacing:1px;
+      line-height:36px;
+    }
+    .subtitle:not(:last-of-type) {
+      margin-bottom:16px;
+    }
+  </style>
+  <div class="draggable hflex" id="subtitlesContainer">
+    <!-- <div id="subtitlesContainer" class="draggable"> -->
+      ${subtitle.text
+        ? langs.map(lang => {
+            if (lang === 'hide' || !subtitle.text[lang].trim()) {
+              return // ignore
+            }
+            return html`
+            <div class="subtitle ${lang}">${subtitle.text[lang].trim()}</div>`
+          })
+        : null}
+    <!-- </div> -->
+  </div>
+  `
+}
+
+export const watermarkTemplate = () =>
+  html`
+  <style>
+    #watermark {
+      justify-content: flex-end;
+      align-items: flex-end;
+      color: white;
+      font-size: 50%;
+      padding: 3px 5px;
+    }
+  </style>
+  <div class="layer" id="watermark">traduction: Valentin Degenne</div>`
+
+export const defaultLayout = async (subtitle, langs) => {
   if (!cover) {
     cover = await getCover()
   }
@@ -76,12 +122,13 @@ export const presentationTemplate = async (subtitle, langs) => {
       #subtitlesContainer {
         width: 70%;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
       }
 
       .subtitle {
-        margin: 0 0 36px;
+        margin: 0 0 20px;
         white-space: pre-wrap;
         text-align: center;
       }
@@ -92,13 +139,12 @@ export const presentationTemplate = async (subtitle, langs) => {
       .kr {
         font-family: NanumSquare;
         line-height: 44px;
-        font-size: 32px;
+        font-size: 125%;
         letter-spacing: 1px;
         font-weight: 100;
       }
       .fr {
         color: var(--second-color);
-        font-size: 24px;
         line-height: 34px;
       }
     </style>
@@ -116,6 +162,40 @@ export const presentationTemplate = async (subtitle, langs) => {
       </div>
     </div>
   </div>
+  ${meta.customHtml}
+  `
+}
+
+export const coverLyricsHorizontal = async subtitle => {
+  if (cover === undefined) {
+    cover = await getCover()
+  }
+
+  return html`
+  <style>
+    #root {
+      --main-color: red;
+    }
+    #cover-container {
+      height: 280px
+    }
+    #cover {
+      height: 100%
+    }
+    #subtitlesContainer {
+      flex:1;
+      justify-content: center;
+      align-items: center;
+    }
+    .subtitle:nth-child(2) {
+      color: var(--main-color)
+    }
+  </style>
+  <div class="layer" id="root">
+    ${cover ? html`<div id="cover-container">${cover}</div>` : null}
+    ${subtitle}
+  </div>
+  ${watermarkTemplate()}
   ${meta.customHtml}
   `
 }
