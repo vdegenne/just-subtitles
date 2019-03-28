@@ -217,6 +217,7 @@
           else {
             playVideoSpan(timecodeSpan.end.toSeconds() - 1, timecodeSpan.end.toSeconds())
           }
+          saveDebounce()
         }, 400)
       }
 
