@@ -2,7 +2,7 @@ WEBVTT
 
 STYLE
 ::cue(v[voice=Brad]) {
-  color: springgreen;
+  color: springgreen
 }
 ::cue(v[voice=Ayoumi]) {
   color: yellow
@@ -602,7 +602,334 @@ Hein ?
 hahaha
 
 00:04:31.200 --> 00:04:32.900 line:99% align:right
-<v Ayoumi>Vous savez pas ce que je dis
+<v Ayoumi>Vous comprenez pas ce que je dis ?
 
+00:04:33.100 --> 00:04:36.000 align:right
+<v Ayoumi>Tu dois dire Icchongwakarang quand tu le dis
+
+00:04:36.300 --> 00:04:37.000 align:right
+<v Ayoumi>Tu as compris ?
+tu as pas compris ?
+
+00:04:37.000 --> 00:04:38.500 position:20% line:99
+<v Sena>Quoi ?
+
+00:04:38.500 --> 00:04:40.400 align:right
+<v Ayoumi>Les gens risquent de pas comprendre haha
+
+00:04:40.400 --> 00:04:41.100
+<v Brad>Le suivant
+
+00:04:41.200 --> 00:04:42.900
+<v Brad>Urusaikara sutete
+[c'est trop fort, éteins]
+
+00:04:43.000 --> 00:04:44.400
+<v Brad>Comment tu dis ça ?
+
+00:04:44.400 --> 00:04:48.100 align:left line:99%
+<v Sena>Ce réveil est trop fort, Hokashitoite !
+
+00:04:47.900 --> 00:04:49.700 line:99%
+<v Brad>Quoi ? Hokash ?
+
+00:04:48.000 --> 00:04:49.700 align:right line:99%
+<v Ayoumi>Hokashitoite ??
+
+00:04:49.700 --> 00:04:51.300 line:70%
+<v Brad>Hokasu (ほかす)
+c'est Suteru (捨てる) ?
+
+00:04:50.600 --> 00:04:52.800 align:left line:70%
+<v Sena>Oui Hokasu (ほかす)
+c'est Suteru (捨てる)
+
+00:04:51.700 --> 00:04:52.600
+<v Brad>Hey tu savais ?
+
+00:04:52.500 --> 00:04:54.100 align:right line:99%
+<v Ayoumi>Pas du tout x3
+
+00:04:53.800 --> 00:04:54.400 line:99%
+hahaha
+
+00:04:54.400 --> 00:04:57.100 line:100%
+<v Brad>à Nagasaki, UrusaiKARA sutete !
+
+00:04:57.500 --> 00:04:59.400 align:right line:99%
+<v Ayoumi>UrusaiKEN sutete !
+
+00:04:58.700 --> 00:04:59.700 line:99%
+<v Brad>UrusaiKEN ?
+
+00:04:59.700 --> 00:05:00.300 line:99%
+<v Brad>KEN c'est quoi ?
+
+00:05:00.400 --> 00:05:02.100 line:99% align:right
+<v Ayoumi>UrusaiKARA?
+
+00:05:01.200 --> 00:05:02.100 line:100%
+<v Brad>Ah KARA
+[parce que]
+
+00:05:02.100 --> 00:05:05.500 line:99%
+<v Brad>Le dialecte de Nagasaki a un côté mignon dans l'ensemble !
+
+00:05:05.300 --> 00:05:06.500 align:left line:99%
+<v Sena>Oui adorable x2
+
+00:05:06.100 --> 00:05:06.800 line:99%
+<v Brad>Oui adorable
+
+00:05:06.700 --> 00:05:08.200 align:left line:99%
+<v Sena>Oui c'est différent avec Osaka...
+
+00:05:08.200 --> 00:05:09.800 line:99%
+hahaha
+
+00:05:09.800 --> 00:05:12.300 line:99% align:left
+<v Sena>Hakata et Nagasaki sont adorables
+
+00:05:12.300 --> 00:05:13.300 line:99%
+<v Brad>C'est vraiment mignon ?
+
+00:05:13.100 --> 00:05:13.900 align:left line:99%
+<v Sena>Oui c'est vraiment mignon
+
+00:05:14.700 --> 00:05:15.900 position:90% line:99%
+<v Ayoumi>Ouais ?
+
+00:05:15.500 --> 00:05:17.000 line:99%
+hahaha
+
+00:05:17.100 --> 00:05:18.700 align:right line:99%
+<v Ayoumi>Merci haha
+
+00:05:19.000 --> 00:05:19.500
+<v Brad>Le suivant
+
+00:05:19.500 --> 00:05:21.200 line:99%
+<v Brad>Kasabuta hondouni kayui
+[La croûte est vraiment démangeante]
+
+00:05:21.200 --> 00:05:23.200 line:99%
+<v Brad>Quand vous avez une croûte c'est vraiment démangeant
+
+00:05:23.200 --> 00:05:23.800
+<v Brad>Comment ?
+
+00:05:23.900 --> 00:05:25.000 align:right
+<v Ayoumi>Tsu bari kayuka
+
+00:05:25.300 --> 00:05:27.700 line:99%
+Oui ? 
+
+00:05:27.700 --> 00:05:28.100 align:left
+<v Sena>Tsu ?
+
+00:05:28.100 --> 00:05:29.300 align:right line:99%
+<v Ayoumi>Tsu !
+
+00:05:28.600 --> 00:05:29.600 line:99% align:left
+<v Sena>Tsu c'est quoi ?
+
+00:05:29.600 --> 00:05:30.400 align:right line:99%
+<v Ayoumi>Tsu c'est Kasabuta
+
+00:05:30.400 --> 00:05:31.500 line:99% align:left
+<v Sena>hein???
+
+00:05:31.500 --> 00:05:33.700
+hahaha
+
+00:05:33.700 --> 00:05:35.000 line:99%
+<v Brad>Bari c'est quoi ? C'est hondouni ?
+
+00:05:35.000 --> 00:05:36.100 align:right line:99%
+<v Ayoumi>Oui c'est pareil que Meccha
+
+00:05:35.900 --> 00:05:36.600 line:99%
+<v Brad>à Kansai ?
+
+00:05:36.700 --> 00:05:38.400 align:left line:99%
+<v Sena>Cette croûte muccha kosobai
+
+00:05:38.400 --> 00:05:39.700 line:99%
+<v Brad>Kosobai ?
+
+00:05:39.000 --> 00:05:40.000 align:right line:99%
+<v Ayoumi>aah
+
+00:05:40.000 --> 00:05:41.100 line:99%
+<v Brad>Meccha c'est du dialecte de Kansai ?
+
+00:05:41.200 --> 00:05:42.700 align:left
+<v Sena>Meccha, Muccha
+
+00:05:42.700 --> 00:05:44.300 align:left line:99%
+<v Sena>On utilise aussi Bari
+
+00:05:44.500 --> 00:05:45.100 line:99%
+<v Brad>Ils utilisent aussi Bari ?
+
+00:05:45.100 --> 00:05:48.100 align:left line:100%
+<v Sena>Les gens de Hyogo (ひょうご) et Kobe (こうべ)
+utilisent aussi Bari
+
+00:05:48.100 --> 00:05:49.300 line:100%
+ahhh
+
+00:05:49.300 --> 00:05:50.500 line:99%
+<v Brad>C'était quoi au lieu de Kayui ?
+
+00:05:50.400 --> 00:05:51.000 align:left line:99%
+<v Sena>Koshobai
+
+00:05:51.300 --> 00:05:52.300 align:left line:100%
+<v Sena>Aah koko koshobai
+[ah ça démange ici]
+
+00:05:52.300 --> 00:05:54.300 line:99%
+<v Brad>Koshobai ça a un côté mignon koshobai
+
+00:05:54.400 --> 00:05:55.300 line:99% align:left
+<v Sena>oui je suis d'accord hehe
+
+00:05:55.300 --> 00:05:56.300 line:99%
+hahaha
+
+00:05:56.300 --> 00:05:56.800 line:99%
+<v Brad>N'est-ce pas ?
+
+00:05:56.700 --> 00:05:58.100 align:left line:99%
+<v Sena>C'est rare haha
+
+00:05:58.100 --> 00:05:59.600 line:99%
+<v Brad>C'est une chose mignonne n'est-ce pas ? haha
+
+00:05:59.700 --> 00:06:00.900
+<v Brad>Ah et..
+
+00:06:00.900 --> 00:06:02.400 line:99%
+<v Brad>Ima shashin totteruno ?
+[Tu es en train de prendre une photo ?]
+
+00:06:02.400 --> 00:06:03.100 line:99%
+<v Brad>à Kansai ?
+
+00:06:03.000 --> 00:06:05.400 position:20% line:99%
+<v Sena>Ima shashin tottennO ?
+
+00:06:04.800 --> 00:06:05.700 line:99%
+<v Brad>TottennO ?
+
+00:06:05.800 --> 00:06:08.500 line:99%
+<v Brad>L'intonation encore
+
+00:06:06.300 --> 00:06:09.000 align:right line:100%
+<v Ayoumi>Cette intonation
+est mignonne aussi
+
+00:06:08.100 --> 00:06:09.900 line:99% align:left
+<v Sena>montante x2
+
+00:06:09.200 --> 00:06:11.400 line:99%
+<v Brad>TottennO! Comme ça ? X2
+
+00:06:11.500 --> 00:06:13.000
+<v Brad>Shashin tottennO
+
+00:06:12.600 --> 00:06:14.300 line:99% align:left
+<v Sena>TottennO
+
+00:06:14.300 --> 00:06:15.900 line:99% align:left
+<v Sena>ouais ouais
+
+00:06:15.900 --> 00:06:18.200
+<v Brad>Avec ça aussi
+
+00:06:18.200 --> 00:06:19.300 line:99%
+<v Brad>à Nagasaki ?
+
+00:06:19.400 --> 00:06:20.900 line:99% align:right
+<v Ayoumi>Shashin tottotto ?
+
+00:06:20.900 --> 00:06:22.100 line:99% align:left
+<v Sena>(Ah trop mignon haha)
+
+00:06:21.500 --> 00:06:22.500 line:99%
+<v Brad>Quoi ?
+
+00:06:22.500 --> 00:06:25.100 line:99%
+<v Brad>Tu demandes bien "Totteruno" là ?
+
+00:06:24.500 --> 00:06:25.600 align:right line:99%
+<v Ayoumi>Oui
+
+00:06:25.600 --> 00:06:26.700
+<v Brad>Totteruno !
+
+00:06:26.700 --> 00:06:27.700
+<v Ayoumi>Tottotto !
+
+00:06:27.700 --> 00:06:30.500
+AHAHAHA
+
+00:06:30.500 --> 00:06:32.300 line:99%
+<v Brad>Quand tu entends tottotto tu penses à quoi ?
+
+00:06:32.300 --> 00:06:33.500 align:left line:99%
+<v Sena>hein ? To ?
+
+00:06:33.500 --> 00:06:34.400 line:99%
+AHAHA
+
+00:06:34.400 --> 00:06:36.900 line:99% align:left
+<v Sena>Il y a les biscuits Ototto tu sais ?
+
+00:06:35.900 --> 00:06:37.300 align:right line:99%
+<v Ayoumi>Ah oui !
+
+00:06:37.100 --> 00:06:38.900 align:left line:99%
+<v Sena>Comment tu dirais "j'ai du Ototto" ?
+
+00:06:41.700 --> 00:06:42.800 line:99% align:right
+<v Ayoumi>Ototto tottotto
+
+00:06:42.800 --> 00:06:45.600 line:99%
+HAHAHAHAHA
+
+00:06:45.600 --> 00:06:46.300 line:99%
+<v Brad>quoi ? x3
+
+00:06:46.300 --> 00:06:47.400 line:99% align:right
+<v Ayoumi>Ototto tottotto
+
+00:06:47.400 --> 00:06:48.500 line:99%
+<v Brad>Ototto tottotto ?
+
+00:06:48.600 --> 00:06:49.700 line:99%
+<v Brad>Oh moi aussi je peux le faire
+
+00:06:48.500 --> 00:06:50.600 line:99% align:left
+<v Sena>hahaha
+
+00:06:49.700 --> 00:06:50.700 line:99%
+<v Brad>Ototto tottotto ?
+
+00:06:51.200 --> 00:06:53.100 line:99% align:left
+<v Sena>haha tu le dis bien x2
+
+00:06:51.200 --> 00:06:53.100 line:99%
+<v Brad>parfait parfait ?
+
+00:06:52.000 --> 00:06:53.100 line:99% align:right
+<v Ayoumi>oui parfait haha
+
+00:06:53.100 --> 00:06:54.300
+<v Brad>Ototto tottotto ?
+
+00:06:54.500 --> 00:06:55.300
+<v Brad>Le suivant
 
 NOTE end
